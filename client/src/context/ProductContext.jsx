@@ -1,36 +1,21 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import productService from "services/product.service";
+useEffect(() => {
+  setIsLoading(true);
 
-const ProductContext = createContext();
+  productService.getProducts(page).then((response) => {
+    console.log("API RESPONSE:", response.data); // 👈 para debug
 
-const ProductProvider = ({ children }) => {
-  const [products, setProducts] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(1);
+    const data = response.data;
 
-  useEffect(() => {
-    setIsLoading(true);
-    productService.getProducts(page).then((response) => {
-      setProducts(response.data);
-      setIsLoading(false);
-    });
-  }, [page]);
+    // 👇 Detecta automáticamente dónde viene el array
+    const productsArray = Array.isArray(data)
+      ? data
+      : Array.isArray(data.products)
+      ? data.products
+      : Array.isArray(data.data)
+      ? data.data
+      : [];
 
-  return (
-    <ProductContext.Provider
-      value={{ products, setProducts, isLoading, setIsLoading, page, setPage }}
-    >
-      {children}
-    </ProductContext.Provider>
-  );
-};
-
-const useProduct = () => {
-  const context = useContext(ProductContext);
-  if (context === undefined) {
-    throw new Error("useProduct must be used within a ProductProvider");
-  }
-  return context;
-};
-
-export { ProductContext, ProductProvider, useProduct };
+    setProducts(productsArray);
+    setIsLoading(false);
+  });
+}, [page]);

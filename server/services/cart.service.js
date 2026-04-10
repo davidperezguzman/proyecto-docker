@@ -6,7 +6,7 @@ const {
   increaseItemQuantityDb,
   decreaseItemQuantityDb,
   emptyCartDb,
-} = require("../db/cart.db");
+} = require("../db/cart.db.js");
 const { ErrorHandler } = require("../helpers/error");
 
 class CartService {
@@ -17,6 +17,7 @@ class CartService {
       throw new ErrorHandler(error.statusCode, error.message);
     }
   };
+
   getCart = async (userId) => {
     try {
       return await getCartDb(userId);
@@ -56,6 +57,7 @@ class CartService {
       throw new ErrorHandler(error.statusCode, error.message);
     }
   };
+
   emptyCart = async (cartId) => {
     try {
       return await emptyCartDb(cartId);

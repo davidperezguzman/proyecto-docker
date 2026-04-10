@@ -5,7 +5,7 @@ client/.eslintcache
 
 # Local Netlify folder
 .netlify
-db
+/db
 dist
 client/public/sitemap.xml
 .terraform/

@@ -7,7 +7,6 @@ const API = axios.create({
   },
 });
 
-// Interceptor para enviar token automáticamente
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -21,7 +20,6 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Manejo de errores
 API.interceptors.response.use(
   (response) => response,
   (error) => {

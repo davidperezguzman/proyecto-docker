@@ -10,6 +10,53 @@ import { Link, Navigate, useLocation } from "react-router-dom";
 import PulseLoader from "react-spinners/PulseLoader";
 import authService from "services/auth.service";
 
+const GoogleLoginButton = ({ disabled, isGoogleLoading, setIsGoogleLoading, onGoogleSuccess }) => {
+  const login = useGoogleLogin({
+    onSuccess: (codeResponse) => onGoogleSuccess(codeResponse),
+    onError: (googleError) => {
+      console.log("Login Failed:", googleError);
+      setIsGoogleLoading(false);
+      toast.error("Google login failed");
+    },
+    flow: "auth-code",
+  });
+
+  return (
+    <Button
+      type="button"
+      layout="link"
+      onClick={() => {
+        setIsGoogleLoading(true);
+        login();
+      }}
+      disabled={disabled}
+      className="mt-4 hover:bg-white bg-white shadow-md font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center mr-2 mb-2"
+    >
+      <svg
+        className="w-4 h-4 mr-2 -ml-1"
+        aria-hidden="true"
+        focusable="false"
+        data-prefix="fab"
+        data-icon="google"
+        role="img"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 488 512"
+      >
+        <path
+          fill="currentColor"
+          d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
+        />
+      </svg>
+
+      {isGoogleLoading ? (
+        <PulseLoader color="#0a138b" size={10} loading />
+      ) : (
+        "Login with Google"
+      )}
+    </Button>
+  );
+};
+
 const Login = () => {
   const { isLoggedIn, setUserState } = useUser();
   const [error, setError] = useState("");
@@ -35,61 +82,36 @@ const Login = () => {
     try {
       const data = await authService.googleLogin(googleData.code);
       toast.success("Login successful 🔓");
-
       setUserState(data);
       setRedirectToReferrer(true);
       setIsGoogleLoading(false);
-    } catch (error) {
+    } catch (err) {
       setIsGoogleLoading(false);
       toast.error("Could not login with Google 😢");
     }
   }
 
-  const googleLogin = useGoogleLogin({
-    onSuccess: (codeResponse) => handleGoogleLogin(codeResponse),
-    onError: (googleError) => {
-      console.log("Login Failed:", googleError);
-      setIsGoogleLoading(false);
-      toast.error("Google login failed");
-    },
-    flow: "auth-code",
-  });
-
-  const handleGoogleButtonClick = () => {
-    if (!googleClientId) {
-      toast.error("Google login is not configured");
-      return;
-    }
-
-    setIsGoogleLoading(true);
-    googleLogin();
-  };
-
-  const onSubmit = async (data) => {
-    const { email, password } = data;
+  const onSubmit = async (formData) => {
+    const { email, password } = formData;
 
     try {
       setError("");
       setIsLoading(true);
-      const response = await authService.login(email, password);
+      const data = await authService.login(email, password);
       toast.success("Login successful 🔓");
 
       setTimeout(() => {
-        setUserState(response);
+        setUserState(data);
         setRedirectToReferrer(true);
         setIsLoading(false);
       }, 1500);
-    } catch (error) {
+    } catch (err) {
       setIsLoading(false);
-      setError(error.response?.data.message || "Login failed");
+      setError(err.response?.data.message || "Login failed");
     }
   };
 
-  if (redirectToReferrer) {
-    return <Navigate to={state?.from || "/"} />;
-  }
-
-  if (isLoggedIn) {
+  if (redirectToReferrer || isLoggedIn) {
     return <Navigate to={state?.from || "/"} />;
   }
 
@@ -142,7 +164,7 @@ const Login = () => {
 
           {errors?.password && (
             <HelperText className="mt-1 italic" valid={false}>
-              {errors?.password?.type === "required" && "Password required"}
+              Password required
             </HelperText>
           )}
 
@@ -161,35 +183,12 @@ const Login = () => {
           </Button>
 
           {googleClientId && (
-            <Button
-              type="button"
-              layout="link"
-              onClick={handleGoogleButtonClick}
+            <GoogleLoginButton
               disabled={isLoading || isGoogleLoading}
-              className="mt-4 hover:bg-white bg-white shadow-md font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center mr-2 mb-2"
-            >
-              <svg
-                className="w-4 h-4 mr-2 -ml-1"
-                aria-hidden="true"
-                focusable="false"
-                data-prefix="fab"
-                data-icon="google"
-                role="img"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 488 512"
-              >
-                <path
-                  fill="currentColor"
-                  d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
-                />
-              </svg>
-
-              {isGoogleLoading ? (
-                <PulseLoader color="#0a138b" size={10} loading />
-              ) : (
-                "Login with Google"
-              )}
-            </Button>
+              isGoogleLoading={isGoogleLoading}
+              setIsGoogleLoading={setIsGoogleLoading}
+              onGoogleSuccess={handleGoogleLogin}
+            />
           )}
 
           <p className="text-sm mt-4">

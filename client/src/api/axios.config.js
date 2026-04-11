@@ -1,12 +1,13 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: "https://proyecto-docker-production.up.railway.app",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
+// Interceptor para enviar token automáticamente
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -20,6 +21,7 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Manejo de errores
 API.interceptors.response.use(
   (response) => response,
   (error) => {

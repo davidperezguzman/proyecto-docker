@@ -1,38 +1,65 @@
-const express = require("express");
-require("express-async-errors");
-const cors = require("cors");
-const morgan = require("morgan");
-const cookieParser = require("cookie-parser");
-const helmet = require("helmet");
-const compression = require("compression");
+import API from "api/axios.config";
 
-const routes = require("./routes");
-const unknownEndpoint = require("./middleware/unKnownEndpoint");
-const { handleError } = require("./helpers/error");
+class AuthService {
+  async login(email, password) {
+    const { data } = await API.post("/api/auth/login", {
+      email,
+      password,
+    });
+    return data;
+  }
 
-const app = express();
+  async googleLogin(code) {
+    const { data } = await API.post("/api/auth/google", {
+      code,
+    });
+    return data;
+  }
 
-app.set("trust proxy", 1);
+  logout() {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("expiresAt");
+  }
 
-app.use(
-  cors({
-    credentials: true,
-    origin: true,
-  })
-);
-app.use(express.json());
-app.use(morgan("dev"));
-app.use(compression());
-app.use(helmet());
-app.use(cookieParser());
+  async forgotPassword(email) {
+    const { data } = await API.post("/api/auth/forgot-password", {
+      email,
+    });
+    return data;
+  }
 
-app.use("/api", routes);
+  async checkToken(token, email) {
+    const { data } = await API.post("/api/auth/check-token", {
+      token,
+      email,
+    });
+    return data;
+  }
 
-app.get("/", (req, res) => {
-  res.send("<h1 style='text-align: center'>E-COMMERCE API</h1>");
-});
+  async resetPassword(token, email, password, password2) {
+    const { data } = await API.post("/api/auth/reset-password", {
+      token,
+      email,
+      password,
+      password2,
+    });
+    return data;
+  }
 
-app.use(unknownEndpoint);
-app.use(handleError);
+  async register(username, email, password) {
+    const { data } = await API.post("/api/auth/signup", {
+      username,
+      email,
+      password,
+    });
+    return data;
+  }
 
-module.exports = app;
+  async getCurrentUser() {
+    const { data } = await API.get("/api/users/profile");
+    return data;
+  }
+}
+
+export default new AuthService();

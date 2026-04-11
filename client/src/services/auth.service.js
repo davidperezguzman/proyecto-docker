@@ -2,7 +2,7 @@ import API from "api/axios.config";
 
 class AuthService {
   async login(email, password) {
-    const { data } = await API.post("/auth/login", {
+    const { data } = await API.post("/api/auth/login", {
       email,
       password,
     });
@@ -10,7 +10,7 @@ class AuthService {
   }
 
   async googleLogin(code) {
-    const { data } = await API.post("/auth/google", {
+    const { data } = await API.post("/api/auth/google", {
       code,
     });
     return data;
@@ -22,38 +22,43 @@ class AuthService {
     localStorage.removeItem("expiresAt");
   }
 
-  forgotPassword(email) {
-    return API.post("/auth/forgot-password", {
+  async forgotPassword(email) {
+    const { data } = await API.post("/api/auth/forgot-password", {
       email,
     });
+    return data;
   }
 
-  checkToken(token, email) {
-    return API.post("auth/check-token", {
+  async checkToken(token, email) {
+    const { data } = await API.post("/api/auth/check-token", {
       token,
       email,
     });
+    return data;
   }
 
-  resetPassword(token, email, password, password2) {
-    return API.post("auth/reset-password", {
+  async resetPassword(token, email, password, password2) {
+    const { data } = await API.post("/api/auth/reset-password", {
       token,
       email,
       password,
       password2,
     });
+    return data;
   }
 
-  register(username, email, password) {
-    return API.post("auth/signup", {
+  async register(username, email, password) {
+    const { data } = await API.post("/api/auth/signup", {
       username,
       email,
       password,
     });
+    return data;
   }
 
-  getCurrentUser() {
-    return API.get("/users/profile");
+  async getCurrentUser() {
+    const { data } = await API.get("/api/users/profile");
+    return data;
   }
 }
 

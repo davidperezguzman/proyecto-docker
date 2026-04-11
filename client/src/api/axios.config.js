@@ -1,19 +1,29 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.PROD ? import.meta.env.VITE_API_URL : "http://localhost:9000/api";
-
 const API = axios.create({
-  baseURL,
-  withCredentials: true,
+  baseURL: import.meta.env.VITE_API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 API.interceptors.request.use(
-  function (req) {
-    const token = JSON.parse(localStorage.getItem("token"));
-    if (token) req.headers["auth-token"] = token;
-    return req;
+  (config) => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
   },
-  function (error) {
+  (error) => Promise.reject(error)
+);
+
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error("Error:", error.response?.data || error.message);
     return Promise.reject(error);
   }
 );

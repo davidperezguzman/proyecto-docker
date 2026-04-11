@@ -27,7 +27,7 @@ const Register = () => {
     setError("");
     if (password === password2) {
       setIsLoading(!isLoading);
-      API.post("/auth/signup", {
+      API.post("/api/auth/signup", {
         username,
         email,
         password,

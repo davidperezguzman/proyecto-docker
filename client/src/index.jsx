@@ -17,25 +17,33 @@ const root = createRoot(container);
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
+const appTree = (
+  <HelmetProvider>
+    <Windmill>
+      <UserProvider>
+        <ProductProvider>
+          <ReviewProvider>
+            <CartProvider>
+              <OrderProvider>
+                <BrowserRouter>
+                  <GlobalHistory />
+                  <App />
+                </BrowserRouter>
+              </OrderProvider>
+            </CartProvider>
+          </ReviewProvider>
+        </ProductProvider>
+      </UserProvider>
+    </Windmill>
+  </HelmetProvider>
+);
+
 root.render(
-  <GoogleOAuthProvider clientId={googleClientId}>
-    <HelmetProvider>
-      <Windmill>
-        <UserProvider>
-          <ProductProvider>
-            <ReviewProvider>
-              <CartProvider>
-                <OrderProvider>
-                  <BrowserRouter>
-                    <GlobalHistory />
-                    <App />
-                  </BrowserRouter>
-                </OrderProvider>
-              </CartProvider>
-            </ReviewProvider>
-          </ProductProvider>
-        </UserProvider>
-      </Windmill>
-    </HelmetProvider>
-  </GoogleOAuthProvider>
+  googleClientId ? (
+    <GoogleOAuthProvider clientId={googleClientId}>
+      {appTree}
+    </GoogleOAuthProvider>
+  ) : (
+    appTree
+  )
 );

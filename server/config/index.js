@@ -2,17 +2,25 @@ require("dotenv").config();
 const { Pool } = require("pg");
 
 const isProduction = process.env.NODE_ENV === "production";
+
 const database =
   process.env.NODE_ENV === "test"
-    ? process.env.POSTGRES_DB_TEST
-    : process.env.POSTGRES_DB;
+    ? process.env.POSTGRES_DB_TEST || process.env.PGDATABASE_TEST
+    : process.env.POSTGRES_DB || process.env.PGDATABASE;
 
-const connectionString = `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${database}`;
+const connectionString =
+  process.env.DATABASE_URL ||
+  process.env.DATABASE_PUBLIC_URL ||
+  `postgresql://${encodeURIComponent(
+    process.env.POSTGRES_USER || process.env.PGUSER
+  )}:${encodeURIComponent(
+    process.env.POSTGRES_PASSWORD || process.env.PGPASSWORD
+  )}@${process.env.POSTGRES_HOST || process.env.PGHOST}:${
+    process.env.POSTGRES_PORT || process.env.PGPORT || 5432
+  }/${database}`;
+
 const pool = new Pool({
   connectionString,
-  /*
-    SSL is not supported in development
-    */
   ssl: isProduction ? { rejectUnauthorized: false } : false,
 });
 
